@@ -5,51 +5,73 @@ import csv
 import ConfigParser
 import xml.etree.ElementTree as ET
 
-def createurl(row):
-	bib_id = row[0]
-	holding_id = row[1]
-	item_id = row[2]
-	return '/almaws/v1/bibs/' + bib_id + '/holdings/'+ holding_id +'/items/' + item_id; 
+
+def get_key():
+	return config.get('Params', 'apikey')
+	
+def get_campus_code():
+	return config.get('Params', 'campuscode')
+	
+def get_sru_base():
+	return config.get('Params', 'sru')
+	
+def get_base_url():
+	return config.get('Params', 'baseurl')
 	
 
-# Read campus parameters
-config = ConfigParser.RawConfigParser()
-config.read(sys.argv[1])
-apikey = config.get('Params', 'apikey')
-baseurl = config.get('Params','baseurl')
-campuscode =  config.get('Params', 'campuscode')
-headers = {"Content-Type": "application/xml"}
 
-# CSV file of former location codes to Alma location codes
-location_map = sys.argv[2]
+"""
+	Read in location_map.csv and create map between former locations and Alma locations
+	Mil/Sierra location => [Alma loc code, Alma Library, Alma call number type for loc]
+
+"""
+def read_location_mapping(loc_map_file):
+	location_mapping = {}
+	f = open(loc_map_file, 'rt')
+	try:
+		reader = csv.reader(f)
+		reader.next()
+		for row in reader:
+			location_mapping[row[0].strip()] = {'location': row[3].strip(),'library': row[2].strip(), 'callnum' : row[4].strip()}
+		return location_mapping
+	finally:
+		f.close()
+
+
+"""
+	Read in item csv file (all items in Alma)?
+"""
+
+
+"""
+	Read in save item csv mapping based on item barcode
+"""
+
+"""
+	Search SRU for item barcode, return matching bib MMS ID 
+"""
+
+"""
+	Get item info based on item barcode
+"""
+def get_item_xml(barcode):
+	item_url = get_base_url() + "/items?item_barcode=" + barcode +  "&apikey=" + get_key()
+	print item_url
+
+
+get_item_xml()
 
 
 
 
 
-"""f = open(items_file, 'rt')
-try:
-    reader = csv.reader(f)
-    reader.next() #skip header line
-    for row in reader:
-    	if row[0] != 'end-of-file':
-			apicall = createurl(row)
-			url =  baseurl + apicall + '?apikey=' + apikey
-			print url
-			response = requests.get(url)
-			
-			item = ET.fromstring(response.content)
-			for item_data in item.findall("item_data"):
-				item_data.find('library').text = library
-				item_data.find('location').text = location
-#				item_data.find('location').set('desc',location_desc)
-			print ET.tostring(item)
-			r = requests.put(url,data=ET.tostring(item),headers=headers)
-			print r.content
 
-finally:
-    f.close()"""
-	
+
+
+
+
+
+
 
 
 
