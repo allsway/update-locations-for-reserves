@@ -32,7 +32,7 @@ def read_location_mapping(loc_map_file):
 		reader = csv.reader(f)
 		reader.next()
 		for row in reader:
-			location_mapping[row[0].strip()] = {'location': row[3].strip(),'library': row[2].strip(), 'callnum' : row[4].strip()}
+			location_mapping[row[0].strip()] = {'location': row[3].strip(),'library': row[2].strip()}
 		return location_mapping
 	finally:
 		f.close()
