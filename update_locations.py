@@ -6,19 +6,15 @@ import ConfigParser
 import logging
 import xml.etree.ElementTree as ET
 
-
+# Returns the API key
 def get_key():
 	return config.get('Params', 'apikey')
-	
-def get_campus_code():
-	return config.get('Params', 'campuscode')
-	
-def get_sru_base():
-	return config.get('Params', 'sru')
-	
+
+# Returns the Alma API base URL
 def get_base_url():
 	return config.get('Params', 'baseurl')
 
+# Returns the location mapping file, taken from the Alma Migration Form
 def get_location_mapping():
 	return config.get('Params', 'locations')
 	
@@ -78,7 +74,20 @@ def get_permanent_location(save_item_info):
 	return loc.strip()
 
 """
-	Parse item data
+	Get item XML from the Alma API, based on item barcode
+"""
+def get_item_xml(barcode):
+	item_url = get_base_url() + "/items?item_barcode=" + barcode +  "&apikey=" + get_key()
+	response = requests.get(item_url)
+	if response.status_code != 200:
+		logging.info("Item not found for item barcode: " + barcode)
+		return None
+	print ET.fromstring(response.content)
+	item = ET.fromstring(response.content)
+	return item
+
+"""
+	Perform location swap, adding temporary location based on current permanent location and updating permanent location based save item csv file location.  
 """
 def parse_row(row,locations):
 	barcode = row[0]
@@ -89,8 +98,6 @@ def parse_row(row,locations):
 		if item.find("holding_data/in_temp_location").text != 'true':
 			temp_location = item.find("item_data/location").text
 			temp_library = item.find("item_data/library").text
-			temp_location_desc = item.find("item_data/location").attrib['desc']
-			temp_library_desc = item.find("item_data/library").attrib['desc']
 			new_temp_library = item.find("holding_data/temp_library")
 			new_temp_location = item.find("holding_data/temp_location")
 			in_temp_location = item.find("holding_data/in_temp_location")
@@ -105,20 +112,6 @@ def parse_row(row,locations):
 			post_item(item,barcode)
 		else:
 			logging.info("Item already in temporary location: " + barcode)
-
-
-"""
-	Get item info based on item barcode
-"""
-def get_item_xml(barcode):
-	item_url = get_base_url() + "/items?item_barcode=" + barcode +  "&apikey=" + get_key()
-	response = requests.get(item_url)
-	if response.status_code != 200:
-		logging.info("Item not found for item barcode: " + barcode)
-		return None
-	print ET.fromstring(response.content)
-	item = ET.fromstring(response.content)
-	return item
 
 
 config = ConfigParser.RawConfigParser()
