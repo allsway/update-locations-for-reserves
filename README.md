@@ -7,6 +7,9 @@ Export this list of records and select the following fields to export
 * BARCODE  
 * 7 SAVE ITEM
 
+####get_save_items.sql
+For Sierra campuses, this query can be used instead of Create Lists to extract the item BARCODE and SAVE ITEM fields. 
+
 ####config.txt
 A configuration file that stores your API key, base API URL and yout location mapping file. 
 ```
