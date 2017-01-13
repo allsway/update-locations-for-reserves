@@ -2,7 +2,7 @@
 import requests
 import sys
 import csv
-import ConfigParser
+import configparser
 import logging
 import xml.etree.ElementTree as ET
 
@@ -30,7 +30,7 @@ def read_location_mapping(loc_map_file):
 	f = open(loc_map_file, 'rt')
 	try:
 		reader = csv.reader(f)
-		reader.next()
+		next(reader)
 		for row in reader:
 			location_mapping[row[0].strip()] = {'location': row[3].strip(),'library': row[2].strip()}
 		return location_mapping
@@ -45,12 +45,11 @@ def read_items(item_file):
 	f  = open(item_file,'rt')
 	try:
 		reader = csv.reader(f)
-		header = reader.next()
+		header = next(reader)
 		locations = read_location_mapping(get_location_mapping())
 		for row in reader:
-			print row
+			print (row)
 			parse_row(row,locations)
-
 	finally:
 		f.close()
 
@@ -62,7 +61,7 @@ def post_item(item,barcode):
 	item_url =  item.attrib['link'] + "?apikey=" +  get_key()
 	headers = {"Content-Type": "application/xml"}
 	r = requests.put(item_url,data=ET.tostring(item),headers=headers)
-	print r.content
+	print (r.content)
 
 	
 """
@@ -82,7 +81,7 @@ def get_item_xml(barcode):
 	if response.status_code != 200:
 		logging.info("Item not found for item barcode: " + barcode)
 		return None
-	print ET.fromstring(response.content)
+	print (ET.fromstring(response.content))
 	item = ET.fromstring(response.content)
 	return item
 
@@ -91,30 +90,34 @@ def get_item_xml(barcode):
 """
 def parse_row(row,locations):
 	barcode = row[0]
-	save_item_info = row[2]
+	save_item_info = row[1]
 	permanent_location = get_permanent_location(save_item_info)
+	print (permanent_location)
 	item = get_item_xml(barcode)
 	if item is not None:
 		if item.find("holding_data/in_temp_location").text != 'true':
 			temp_location = item.find("item_data/location").text
-			temp_library = item.find("item_data/library").text
-			new_temp_library = item.find("holding_data/temp_library")
-			new_temp_location = item.find("holding_data/temp_location")
-			in_temp_location = item.find("holding_data/in_temp_location")
-			in_temp_location.text =  "true"
-			new_temp_location.text = temp_location
-			new_temp_library.text = temp_library
-			perm_location = item.find("item_data/location")
-			perm_library = item.find("item_data/library")
-			perm_location.text = locations[permanent_location]['location']
-			perm_library.text = locations[permanent_location]['library']
-			print ET.tostring(item)
-			post_item(item,barcode)
+			if temp_location != locations[permanent_location]['location']:
+				temp_library = item.find("item_data/library").text
+				new_temp_library = item.find("holding_data/temp_library")
+				new_temp_location = item.find("holding_data/temp_location")
+				in_temp_location = item.find("holding_data/in_temp_location")
+				in_temp_location.text =  "true"
+				new_temp_location.text = temp_location
+				new_temp_library.text = temp_library
+				perm_location = item.find("item_data/location")
+				perm_library = item.find("item_data/library")
+				perm_location.text = locations[permanent_location]['location']
+				perm_library.text = locations[permanent_location]['library']
+				print (ET.tostring(item))
+				post_item(item,barcode)
+			else:
+				logging.info("Temporary location same as permanent location: " + barcode)
 		else:
 			logging.info("Item already in temporary location: " + barcode)
 
 
-config = ConfigParser.RawConfigParser()
+config = configparser.ConfigParser()
 config.read(sys.argv[1])
 logging.basicConfig(filename='status.log',level=logging.DEBUG)
 items_file = sys.argv[2]
