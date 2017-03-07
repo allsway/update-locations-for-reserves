@@ -21,7 +21,7 @@ baseurl: host
 locationmap: path_to_data_inputs/location.csv
 ```
 ####locations.csv
-Your Migration form Locations tab saved in .csv format (copy and paste the Excel Locations tab into a new Excel spreadsheet and save as a csv file to create this data input. 
+Your Migration form locations tab saved in .csv format (copy and paste the Excel Locations tab into a new Excel spreadsheet and save as a csv file to create this data input). 
 
 ####update-items.py
 Takes as arguments:
