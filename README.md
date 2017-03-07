@@ -7,17 +7,21 @@ Export this list of records and select the following fields to export
 * BARCODE  
 * 7 SAVE ITEM
 
+This file is your {item_data.csv} file
+
 ####get_save_items.sql
 For Sierra campuses, this query can be used instead of Create Lists to extract the item BARCODE and SAVE ITEM fields. 
 
 ####config.txt
-A configuration file that stores your API key, base API URL and yout location mapping file. 
+A configuration file that stores your API key, base API URL and yout location mapping file. The base API URL is in the following format: https://api-na.hosted.exlibrisgroup.com/almaws/v1.  
 ```
 [Params]
 apikey: apikey 
 baseurl: host
 locationmap: path_to_data_inputs/location.csv
 ```
+####locations.csv
+Your Migration form Locations tab saved in .csv format (copy and paste the Excel Locations tab into a new Excel spreadsheet and save as a csv file to create this data input. 
 
 ####update-items.py
 Takes as arguments:
