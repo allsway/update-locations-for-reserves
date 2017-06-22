@@ -72,7 +72,7 @@ def get_item_xml(barcode):
     print(item_url)
     response = requests.get(item_url)
     if response.status_code != 200:
-        logging.info("Item not found for item barcode: " + barcode)
+        print ("Item not found for item barcode: " + barcode)
         return None
     print (ET.fromstring(response.content))
     item = ET.fromstring(response.content)
@@ -84,32 +84,34 @@ def get_item_xml(barcode):
 def parse_row(row,locations):
     barcode = row[0]
     save_item_info = row[1]
-    permanent_location = get_permanent_location(save_item_info)
-    # Check if olocat code actually exists in the location mapping file
-    if permanent_location in locations:
-        print (permanent_location)
-        item = get_item_xml(barcode)
-        print (item)
-        if item is not None and permanent_location != '':
-            if item.find("holding_data/in_temp_location").text != 'true':
-                temp_location = item.find("item_data/location").text
-                if temp_location != locations[permanent_location]['location']:
-                    temp_library = item.find("item_data/library").text
-                    new_temp_library = item.find("holding_data/temp_library")
-                    new_temp_location = item.find("holding_data/temp_location")
-                    in_temp_location = item.find("holding_data/in_temp_location")
-                    in_temp_location.text =  "true"
-                    new_temp_location.text = temp_location
-                    new_temp_library.text = temp_library
-                    perm_location = item.find("item_data/location")
-                    perm_library = item.find("item_data/library")
-                    perm_location.text = locations[permanent_location]['location']
-                    perm_library.text = locations[permanent_location]['library']
-                    post_item(item,barcode)
+    if len(save_item_info) > 3:
+        permanent_location = get_permanent_location(save_item_info)
+        # Check if olocat code actually exists in the location mapping file
+        if permanent_location in locations:
+            print (permanent_location)
+            item = get_item_xml(barcode)
+            print (item)
+            if item is not None and permanent_location != '':
+                if item.find("holding_data/in_temp_location").text != 'true':
+                    temp_location = item.find("item_data/location").text
+                    print ("Old loc: " + temp_location)
+                    if temp_location != locations[permanent_location]['location']:
+                        temp_library = item.find("item_data/library").text
+                        new_temp_library = item.find("holding_data/temp_library")
+                        new_temp_location = item.find("holding_data/temp_location")
+                        in_temp_location = item.find("holding_data/in_temp_location")
+                        in_temp_location.text =  "true"
+                        new_temp_location.text = temp_location
+                        new_temp_library.text = temp_library
+                        perm_location = item.find("item_data/location")
+                        perm_library = item.find("item_data/library")
+                        perm_location.text = locations[permanent_location]['location']
+                        perm_library.text = locations[permanent_location]['library']
+                        post_item(item,barcode)
+                    else:
+                        print ("Temporary location same as permanent location: " + barcode)
                 else:
-                    logging.info("Temporary location same as permanent location: " + barcode)
-            else:
-                logging.info("Item already in temporary location: " + barcode)
+                    print("Item already in temporary location: " + barcode)
 
 # Read in configuration file
 config = configparser.ConfigParser()
