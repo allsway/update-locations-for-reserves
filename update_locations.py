@@ -103,6 +103,7 @@ def parse_row(row,locations):
         if item is not None and permanent_location != '':
             if item.find("holding_data/in_temp_location").text != 'true':
                 temp_location = item.find("item_data/location").text
+                print (temp_location)
                 if temp_location != locations[permanent_location]['location']:
                     perm_location = item.find("item_data/location")
                     perm_library = item.find("item_data/library")

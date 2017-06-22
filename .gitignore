@@ -2,3 +2,6 @@
 *.out
 *.log
 *.txt
+*.mrk
+*.mrc
+*.xlsx
